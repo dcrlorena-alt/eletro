@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Bingo de Eletroterapia - CEUB</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #333; }
+        .page { width: 210mm; height: 297mm; margin: 0 auto; padding: 2mm; box-sizing: border-box; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2mm; page-break-after: always; }
+        .cartela { width: 100%; height: 100%; padding: 2mm; box-sizing: border-box; position: relative; border: 2px dashed #ccc; border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; }
+        .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #5e2a84; padding-bottom: 3px; margin-bottom: 3px; }
+        .logo-area { display: flex; align-items: center; }
+        .logo-area .logo-text { font-size: 16px; font-weight: 900; color: #5e2a84; letter-spacing: 1px; }
+        .logo-area .logo-sub { font-size: 8px; color: #666; font-weight: bold; }
+        .game-info { text-align: right; }
+        .game-title { font-size: 10px; font-weight: bold; color: #5e2a84; text-transform: uppercase; }
+        .card-number { font-size: 8px; color: #666; font-weight: bold; margin-top: 2px; }
+        table { width: 100%; border-collapse: collapse; flex: 1; table-layout: fixed; }
+        tr { height: 25%; }
+        td { border: 2px solid #5e2a84; width: 25%; text-align: center; vertical-align: middle; font-size: 11px; font-weight: bold; padding: 2px; box-sizing: border-box; background: #fafafa; color: #222; line-height: 1.2; word-wrap: break-word; overflow-wrap: break-word; hyphens: none; }
+        .footer { text-align: center; font-size: 7px; color: #888; font-weight: bold; letter-spacing: 0.3px; margin-top: 2px; }
+        @media print { body { background: none; } .cartela { border: 1px dashed #aaa; } .page { margin: 0; padding: 2mm; } }
+    </style>
+</head>
+<body>
+
+<script>
+// 32 termos dos conceitos básicos de eletroterapia (biofísica)
+const termos = [
+    "Corrente Contínua",
+    "Corrente Alternada",
+    "Corrente Pulsada",
+    "Amplitude de Pulso",
+    "Largura de Pulso",
+    "Frequência de Pulso",
+    "Forma de Onda",
+    "Baixa Frequência",
+    "Média Frequência",
+    "Alta Frequência",
+    "Potencial de Ação",
+    "Despolarização",
+    "Repolarização",
+    "Polarizada",
+    "Despolarizada",
+    "Bomba de Sódio e Potássio",
+    "Eletrodo",
+    "Condutor",
+    "Isolante",
+    "Campo Elétrico",
+    "Modulação em Amplitude",
+    "Tempo ON e OFF",
+    "Limiar de Excitação",
+    "Vasoconstrição",
+    "Vasodilatação",
+    "Corrente Elétrica",
+    "Fluxo de Íons",
+    "Agentes Físicos",
+    "Tempo de Subida",
+    "Tempo de Descida",
+    "Acomodação",
+    "Impedância da Pele"
+];
+
+// Algoritmo com seed fixa para gerar cartelas reproduzíveis
+let seed = 54321;
+function seededRandom() {
+    seed = (seed * 1664525 + 1013904223) & 0x7FFFFFFF;
+    return seed / 0x7FFFFFFF;
+}
+
+function embaralharSeed(array) {
+    let result = [...array];
+    for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(seededRandom() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+}
+
+// Gerar 40 cartelas com 16 termos cada (de um banco de 32)
+const cartelas = [];
+const NUM_CARTELAS = 30;
+const TERMOS_POR_CARTELA = 16;
+
+for (let c = 0; c < NUM_CARTELAS; c++) {
+    let tentativas = 0;
+    let cartela;
+    let valida = false;
+
+    while (!valida && tentativas < 500) {
+        tentativas++;
+        const embaralhados = embaralharSeed([...termos]);
+        cartela = embaralhados.slice(0, TERMOS_POR_CARTELA);
+
+        valida = true;
+        for (let p = 0; p < cartelas.length; p++) {
+            const comuns = cartela.filter(t => cartelas[p].includes(t)).length;
+            if (comuns > 12) {
+                valida = false;
+                break;
+            }
+            const mesmaCombo = cartela.every((t, i) => t === cartelas[p][i]);
+            if (mesmaCombo) {
+                valida = false;
+                break;
+            }
+        }
+    }
+
+    cartela = embaralharSeed(cartela);
+    cartelas.push(cartela);
+}
+
+// Renderizar as 40 cartelas (4 por página)
+for (let c = 0; c < NUM_CARTELAS; c++) {
+    if (c % 4 === 0) document.write('<div class="page">');
+
+    const t = cartelas[c];
+    document.write(`
+        <div class="cartela">
+            <div class="header">
+                <div class="logo-area">
+                    <div>
+                        <div class="logo-text">CEUB</div>
+                        <div class="logo-sub">Centro Universitário de Brasília</div>
+                    </div>
+                </div>
+                <div class="game-info">
+                    <div class="game-title">Bingo de Eletroterapia</div>
+                    <div class="card-number">Conceitos Básicos • Cartela #${String(c + 1).padStart(2, '0')}</div>
+                </div>
+            </div>
+            <table>
+                <tr>
+                    <td>${t[0]}</td>
+                    <td>${t[1]}</td>
+                    <td>${t[2]}</td>
+                    <td>${t[3]}</td>
+                </tr>
+                <tr>
+                    <td>${t[4]}</td>
+                    <td>${t[5]}</td>
+                    <td>${t[6]}</td>
+                    <td>${t[7]}</td>
+                </tr>
+                <tr>
+                    <td>${t[8]}</td>
+                    <td>${t[9]}</td>
+                    <td>${t[10]}</td>
+                    <td>${t[11]}</td>
+                </tr>
+                <tr>
+                    <td>${t[12]}</td>
+                    <td>${t[13]}</td>
+                    <td>${t[14]}</td>
+                    <td>${t[15]}</td>
+                </tr>
+            </table>
+            <div class="footer">Eletroterapia • Professora Dayanne Ayres • CEUB</div>
+        </div>
+    `);
+
+    if (c % 4 === 3 || c === NUM_CARTELAS - 1) document.write('</div>');
+}
+</script>
+
+</body>
+</html>
